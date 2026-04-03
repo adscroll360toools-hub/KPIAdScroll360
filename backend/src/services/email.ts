@@ -5,13 +5,13 @@ const transporter = nodemailer.createTransport({
     port: parseInt(process.env.SMTP_PORT || '587', 10),
     secure: false,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
 
 export const sendTaskNotification = async (to: string, taskTitle: string, action: string) => {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
         console.warn("SMTP credentials not set. Mocking email delivery.");
         return;
     }
