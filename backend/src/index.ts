@@ -15,7 +15,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Setup Logger
 export const logger = winston.createLogger({
     level: 'info',
     format: winston.format.json(),
@@ -24,36 +23,25 @@ export const logger = winston.createLogger({
     ],
 });
 
-// Setup Rate Limiter
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    windowMs: 15 * 60 * 1000,
+    max: 100,
 });
-
-const allowedOrigins = [
-    "http://localhost:3000",
-    "https://workspace.adscroll360.com"
-];
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+        // Dynamically allow all origins to prevent Vercel preview domain/DNS propagation errors
+        callback(null, true);
     },
     credentials: true
 }));
 
 app.use(limiter);
 
-// Stripe webhook must use raw body before express.json() is applied globally
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/tasks', taskRoutes);
