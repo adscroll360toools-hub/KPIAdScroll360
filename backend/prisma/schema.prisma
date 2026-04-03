@@ -33,18 +33,20 @@ enum TaskPriority {
 }
 
 model Company {
-  id             String         @id @default(uuid())
-  name           String
-  domain         String?
-  plan           Plan           @default(BASIC)
-  active         Boolean        @default(true)
-  users          User[]
-  tasks          Task[]
-  rewards        GlobalReward[]
-  skills         Skill[]
-  standups       DailyStandup[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id                     String         @id @default(uuid())
+  name                   String
+  domain                 String?
+  plan                   Plan           @default(BASIC)
+  stripeCustomerId       String?        @unique
+  stripeSubscriptionId   String?        @unique
+  active                 Boolean        @default(true)
+  users                  User[]
+  tasks                  Task[]
+  rewards                GlobalReward[]
+  skills                 Skill[]
+  standups               DailyStandup[]
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
 }
 
 model User {
@@ -63,6 +65,7 @@ model User {
   skills         Skill[]
   standups       DailyStandup[]
   rewardViews    RewardView[]
+  notifications  Notification[]
   
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -155,4 +158,18 @@ model DailyStandup {
 
   @@unique([userId, date])
   @@index([companyId])
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  title          String
+  message        String
+  isRead         Boolean      @default(false)
+  type           String       // "TASK", "REWARD", "SYSTEM"
+  
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
 }

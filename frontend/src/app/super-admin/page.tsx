@@ -11,6 +11,7 @@ export default function SuperAdminDashboard() {
     const router = useRouter();
 
     const [companies, setCompanies] = useState<any[]>([]);
+    const [metrics, setMetrics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     // Form states
@@ -25,6 +26,9 @@ export default function SuperAdminDashboard() {
         try {
             const data = await api.companies.list();
             setCompanies(data.companies);
+
+            const anl = await api.companies.analytics();
+            setMetrics(anl.metrics);
         } catch (e) {
             console.error(e);
         } finally {
@@ -60,8 +64,7 @@ export default function SuperAdminDashboard() {
             <aside className="w-64 bg-white border-r min-h-screen p-4 flex flex-col">
                 <h2 className="text-xl font-bold tracking-tight text-blue-600 mb-8 mt-2 px-2">WorkHub Super Admin</h2>
                 <nav className="flex-1 space-y-2">
-                    <Button variant="secondary" className="w-full justify-start">Workspaces</Button>
-                    <Button variant="ghost" className="w-full justify-start">Billing Stats</Button>
+                    <Button variant="secondary" className="w-full justify-start">Workspaces & Analytics</Button>
                 </nav>
                 <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700" onClick={logout}>
                     Sign Out
@@ -78,6 +81,27 @@ export default function SuperAdminDashboard() {
                         Total Workspaces: {companies.length}
                     </div>
                 </header>
+
+                {metrics && (
+                    <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-500 text-center">
+                            <div className="text-gray-500 text-sm">Active Companies</div>
+                            <div className="text-3xl font-bold">{metrics.activeCompanies}</div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-purple-500 text-center">
+                            <div className="text-gray-500 text-sm">Total Network Users</div>
+                            <div className="text-3xl font-bold">{metrics.totalUsers}</div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-green-500 text-center">
+                            <div className="text-gray-500 text-sm">Network Tasks Solved</div>
+                            <div className="text-3xl font-bold">{metrics.totalTasksCompleted}</div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-yellow-500 text-center">
+                            <div className="text-gray-500 text-sm">Global Perf Score</div>
+                            <div className="text-3xl font-bold">{metrics.globalPerformanceScore}%</div>
+                        </div>
+                    </section>
+                )}
 
                 <section className="bg-white p-6 rounded-xl shadow-sm border">
                     <h2 className="text-lg font-bold mb-4">Create New Company</h2>

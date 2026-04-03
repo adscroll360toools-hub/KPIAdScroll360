@@ -47,6 +47,21 @@ export const api = {
         create: async (data: any) => fetchWithAuth('/api/companies', {
             method: 'POST',
             body: JSON.stringify(data)
+        }),
+        analytics: async () => fetchWithAuth('/api/companies/analytics')
+    },
+
+    users: {
+        create: async (data: any) => fetchWithAuth('/api/users', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+    },
+
+    stripe: {
+        createCheckout: async (planType: string) => fetchWithAuth('/api/stripe/create-checkout', {
+            method: 'POST',
+            body: JSON.stringify({ planType })
         })
     }
 };

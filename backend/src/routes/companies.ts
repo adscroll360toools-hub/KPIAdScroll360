@@ -8,6 +8,32 @@ const router = Router();
 // Only Super Admins can list and create companies
 router.use(authenticate);
 
+// Phase 5: Super Admin Analytics Configuration
+router.get('/analytics', requireRole(['SUPER_ADMIN']), async (req, res) => {
+    try {
+        const [totalUsers, totalTasks, activeCompanies] = await Promise.all([
+            prisma.user.count(),
+            prisma.task.count({ where: { status: 'COMPLETED' } }),
+            prisma.company.count({ where: { active: true } })
+        ]);
+
+        // Dynamic Scoring Element Placeholder (Compute based on tasks vs late penalty)
+        const globalPerformanceScore = 92.5;
+
+        res.json({
+            metrics: {
+                totalUsers,
+                totalTasksCompleted: totalTasks,
+                activeCompanies,
+                globalPerformanceScore
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch analytics' });
+    }
+});
+
 router.get('/', requireRole(['SUPER_ADMIN']), async (req, res) => {
     try {
         const companies = await prisma.company.findMany({
@@ -30,7 +56,6 @@ router.post('/', requireRole(['SUPER_ADMIN']), async (req, res) => {
     }
 
     try {
-        // Check if email already exists
         const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
         if (existingAdmin) {
             return res.status(400).json({ error: 'Admin email already exists' });
@@ -38,6 +63,7 @@ router.post('/', requireRole(['SUPER_ADMIN']), async (req, res) => {
 
         const hash = await bcrypt.hash(adminPassword, 10);
 
+        // Stripe onboarding phase happens in parallel / downstream asynchronously usually.
         const company = await prisma.company.create({
             data: {
                 name,
