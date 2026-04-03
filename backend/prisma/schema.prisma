@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum Role {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  CONTROLLER
+  EMPLOYEE
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Company {
+  id             String         @id @default(uuid())
+  name           String
+  domain         String?
+  plan           Plan           @default(BASIC)
+  active         Boolean        @default(true)
+  users          User[]
+  tasks          Task[]
+  rewards        GlobalReward[]
+  skills         Skill[]
+  standups       DailyStandup[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  passwordHash   String
+  name           String
+  role           Role           @default(EMPLOYEE)
+  
+  companyId      String?
+  company        Company?       @relation(fields: [companyId], references: [id])
+  
+  assignedTasks  Task[]         @relation("AssignedTo")
+  createdTasks   Task[]         @relation("AssignedBy")
+  
+  skills         Skill[]
+  standups       DailyStandup[]
+  rewardViews    RewardView[]
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Task {
+  id             String       @id @default(uuid())
+  title          String
+  description    String
+  status         TaskStatus   @default(PENDING)
+  priority       TaskPriority @default(MEDIUM)
+  deadline       DateTime?
+  
+  assignedToId   String
+  assignedTo     User         @relation("AssignedTo", fields: [assignedToId], references: [id])
+  
+  assignedById   String
+  assignedBy     User         @relation("AssignedBy", fields: [assignedById], references: [id])
+  
+  companyId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([companyId])
+  @@index([assignedToId])
+}
+
+model GlobalReward {
+  id             String       @id @default(uuid())
+  title          String
+  description    String
+  
+  companyId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  
+  views          RewardView[]
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([companyId])
+}
+
+model RewardView {
+  id             String       @id @default(uuid())
+  rewardId       String
+  reward         GlobalReward @relation(fields: [rewardId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  
+  createdAt      DateTime     @default(now())
+
+  @@unique([rewardId, userId])
+}
+
+model Skill {
+  id             String       @id @default(uuid())
+  name           String
+  progress       Int          @default(0) // 0 to 100
+  
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  
+  companyId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([userId])
+}
+
+model DailyStandup {
+  id             String       @id @default(uuid())
+  date           DateTime     // Just the date part
+  yesterday      String
+  today          String
+  blockers       String?
+  
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  
+  companyId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, date])
+  @@index([companyId])
+}
