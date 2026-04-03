@@ -1,17 +1,15 @@
 import { Router } from 'express';
-import Stripe from 'stripe';
 import { prisma } from '../context';
 import { authenticate, requireRole } from '../middleware/authMiddleware';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-    apiVersion: '2025-02-24.acacia',
-});
+const Stripe = require('stripe');
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
 
 const router = Router();
 
 // Endpoint to create a checkout session
 router.post('/create-checkout', authenticate, requireRole(['COMPANY_ADMIN']), async (req, res) => {
-    const { planType } = req.body; // PRO or ENTERPRISE
+    const { planType } = req.body;
     const { companyId } = req.user!;
 
     if (!companyId) return res.status(403).json({ error: 'No company attached' });
@@ -41,13 +39,12 @@ router.post('/create-checkout', authenticate, requireRole(['COMPANY_ADMIN']), as
     }
 });
 
-// Webhook endpoint to receive background events from Stripe (IMPORTANT: raw body parser required)
+// Webhook endpoint to receive background events from Stripe
 router.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
     try {
-        // Explicitly cast req.body as any generic payload buffer logic handles it correctly below.
         event = stripe.webhooks.constructEvent(req.body, sig as string, process.env.STRIPE_WEBHOOK_SECRET as string);
     } catch (err: any) {
         return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -55,24 +52,23 @@ router.post('/webhook', async (req, res) => {
 
     // Handle the event
     if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session: any = event.data.object;
         const companyId = session.client_reference_id;
         const subscriptionId = session.subscription as string;
         const customerId = session.customer as string;
 
         if (companyId) {
-            // Fetch subscription from stripe to determine plan directly or infer from session
             await prisma.company.update({
                 where: { id: companyId },
                 data: {
                     stripeSubscriptionId: subscriptionId,
                     stripeCustomerId: customerId,
-                    plan: 'PRO', // Alternatively fetch line item to set dynamically
+                    plan: 'PRO',
                 },
             });
         }
     } else if (event.type === 'customer.subscription.deleted') {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription: any = event.data.object;
         await prisma.company.updateMany({
             where: { stripeSubscriptionId: subscription.id },
             data: { plan: 'BASIC' },

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "postinstall": "tsc",
+    "postinstall": "npx prisma generate && tsc",
     "start": "node dist/index.js",
     "db:push": "prisma db push"
   },
@@ -19,22 +19,21 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.3.2",
     "jsonwebtoken": "^9.0.3",
-    "morgan": "^1.10.1",
     "nodemailer": "^8.0.4",
     "pg": "^8.20.0",
-    "stripe": "^22.0.0",
     "typescript": "^6.0.2",
-    "winston": "^3.19.0"
-  },
-  "devDependencies": {
+    "stripe": "^14.22.0",
+    "express-rate-limit": "^7.2.0",
+    "winston": "^3.12.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.5.2",
     "@types/nodemailer": "^7.0.11",
-    "prisma": "^5.22.0",
     "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }
