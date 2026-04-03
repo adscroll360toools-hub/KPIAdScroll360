@@ -8,9 +8,23 @@ import taskRoutes from './routes/tasks';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://workspace.adscroll360.com"
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -22,6 +36,6 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

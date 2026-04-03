@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'smtp.titan.email',
     port: parseInt(process.env.SMTP_PORT || '587', 10),
     secure: false,
     auth: {
@@ -17,7 +17,7 @@ export const sendTaskNotification = async (to: string, taskTitle: string, action
     }
 
     const mailOptions = {
-        from: `"AdScroll360 WorkHub" <${process.env.SMTP_USER}>`,
+        from: `"AdScroll360" <noreply@adscroll360.com>`,
         to,
         subject: `Task Update: ${taskTitle}`,
         html: `
