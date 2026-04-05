@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.adscroll360.com';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ace-pilot-backend.onrender.com';
+
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;

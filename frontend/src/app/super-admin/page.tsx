@@ -50,10 +50,12 @@ export default function SuperAdminDashboard() {
         e.preventDefault();
         try {
             await api.companies.create({ name, domain, plan, adminEmail, adminName, adminPassword });
-            alert("Company created successfully!");
+            alert("Workspace created successfully! You can now log in with the admin credentials.");
+            setName(""); setDomain(""); setAdminEmail(""); setAdminName(""); setAdminPassword("");
             fetchCompanies();
         } catch (e: any) {
-            alert(e.message || "Error creating company");
+            console.error("Creation Error:", e);
+            alert(e.message || "Failed to create workspace. Ensure the email is unique and all fields are valid.");
         }
     };
 
